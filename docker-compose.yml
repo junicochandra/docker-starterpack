@@ -1,0 +1,102 @@
+version: '3'
+
+networks:
+    nginx-php-mysql8:
+
+services:
+
+    # nginx
+    nginx:
+        image: nginx:stable-alpine
+        container_name: nginx-container
+        ports:
+            - "8080:80"
+        volumes:
+            - ${WEB_DIRECTORY}:/var/www/
+            - ./services/nginx/sites-enabled:/etc/nginx/conf.d/
+        depends_on:
+            - php71-service
+            - php74-service
+            - php80-service
+            - php81-service
+            - mysql8-service
+        networks:
+            - nginx-php-mysql8
+
+    # php
+    php71-service:
+        build:
+            context: ./services/php-fpm
+            dockerfile: ./Dockerfile
+            args:
+                - PHP_VERSION=7.1.15-fpm-alpine
+                - INSTALL_SYMFONY5=false
+                - INSTALL_COMPOSER=true
+                - INSTALL_INTL=false
+        container_name: php71-container
+        volumes:
+            - ${WEB_DIRECTORY}:/var/www/
+            - ./services/php-fpm/config/php7.1.ini:/usr/local/etc/php/php.ini
+        networks:
+            - nginx-php-mysql8
+
+    php74-service:
+        build:
+            context: ./services/php-fpm
+            dockerfile: ./Dockerfile
+            args:
+                - PHP_VERSION=7.4-fpm
+                - INSTALL_SYMFONY5=true
+                - INSTALL_COMPOSER=true
+                - INSTALL_INTL=true
+        container_name: php74-container
+        volumes:
+            - ${WEB_DIRECTORY}:/var/www/
+            - ./services/php-fpm/config/php7.4.ini:/usr/local/etc/php/php.ini
+        networks:
+            - nginx-php-mysql8
+
+    php80-service:
+        build:
+            context: ./services/php-fpm
+            dockerfile: ./Dockerfile
+            args:
+                - PHP_VERSION=8.0-fpm-alpine
+                - INSTALL_SYMFONY5=false
+                - INSTALL_COMPOSER=true
+                - INSTALL_INTL=false
+        container_name: php80-container
+        volumes:
+            - ${WEB_DIRECTORY}:/var/www/
+            - ./services/php-fpm/config/php8.0.ini:/usr/local/etc/php/php.ini
+        networks:
+            - nginx-php-mysql8
+    
+    php81-service:
+        build:
+            context: ./services/php-fpm
+            dockerfile: ./Dockerfile
+            args:
+                - PHP_VERSION=8.1-fpm-alpine
+                - INSTALL_COMPOSER=true
+        container_name: php81-container
+        volumes:
+            - ${WEB_DIRECTORY}:/var/www/
+            - ./services/php-fpm/config/php8.1.ini:/usr/local/etc/php/php.ini
+        networks:
+            - nginx-php-mysql8
+
+    # mysql
+    mysql8-service:
+        image: mysql:8
+        container_name: mysql8-container
+        ports:
+            - "4401:3306"
+        volumes:
+            - ./mysql:/var/lib/mysql
+        command: --default-authentication-plugin=mysql_native_password --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+        restart: always # always restart unless stopped manually
+        environment:
+            MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+        networks:
+            - nginx-php-mysql8
