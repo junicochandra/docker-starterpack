@@ -1,7 +1,6 @@
-# docker
+# Docker
 
 ## Getting started
-First, run the development:
 
 ```bash
 # The "./rebuild" script is designed for the purpose of rebuilding Docker containers. This script facilitates the process of refreshing and updating Docker images, ensuring the latest changes and configurations are applied to the containers
