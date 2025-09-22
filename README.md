@@ -1,4 +1,4 @@
-# Dockstack
+# Docker Starterpack
 
 Simple and clean Docker setup for **Nginx + PHP**.  
 This repository is a ready-to-use environment to run and serve PHP applications using Docker.
