@@ -1,6 +1,6 @@
 # Docker Starterpack
 
-**Simple and clean Docker setup**
+**Simple and clean Docker setup**  
 This repository provides a ready-to-use environment to run and serve applications using Docker.
 
 ---
