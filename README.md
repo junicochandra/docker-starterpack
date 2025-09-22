@@ -1,14 +1,25 @@
-# Docker
+# Dockstack
+
+Simple and clean Docker setup for **Nginx + PHP**.  
+This repository is a ready-to-use environment to run and serve PHP applications using Docker.
+
+---
+
+## Stack
+
+- **Nginx** web server & reverse proxy
+- **PHP-FPM** PHP runtime for handling requests
+- **Docker Compose** container orchestration
 
 ## Getting started
 
 ```bash
-# The "./rebuild" script is designed for the purpose of rebuilding Docker containers. This script facilitates the process of refreshing and updating Docker images, ensuring the latest changes and configurations are applied to the containers
+# Rebuild Docker containers (refresh images & configs)
 ./rebuild
 
-# The "./start" script is specifically crafted to commence the execution of a Docker container. This script streamlines the process of launching and initializing Docker containers with predefined configurations
+# Start containers with predefined configurations
 ./start
 
-# The "./stop" script is designed for the explicit purpose of halting the operation of a Docker container. This script facilitates the orderly shutdown of containers, ensuring a controlled cessation of their processes
+# Stop containers safely and gracefully
 ./stop
 ```
