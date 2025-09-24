@@ -1,5 +1,6 @@
 networks:
   app-network:
+    driver: bridge
 
 services:
   # nginx
@@ -16,6 +17,7 @@ services:
       - php80-service
       - php84-service
       - mysql8-service
+      - real-estate-price
     networks:
       - app-network
 
@@ -74,5 +76,18 @@ services:
     command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+    networks:
+      - app-network
+
+  # Python - FastAPI
+  real-estate-price:
+    build:
+      context: ../real-estate-price-predictor
+    container_name: real-estate-price-container
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000
+    volumes:
+      - ../real-estate-price-predictor:/app
+    expose:
+      - "8000"
     networks:
       - app-network
