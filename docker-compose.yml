@@ -84,7 +84,7 @@ services:
     build:
       context: ../real-estate-price-predictor
     container_name: real-estate-price-container
-    command: uvicorn app.main:app --host 0.0.0.0 --port 8000
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
     volumes:
       - ../real-estate-price-predictor:/app
     expose:
