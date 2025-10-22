@@ -91,3 +91,18 @@ services:
       - "8000"
     networks:
       - app-network
+  
+  # Golang API Service
+  golang-api:
+    build:
+      context: ../golang-api-service
+      dockerfile: Dockerfile
+    container_name: golang-api-container
+    ports:
+      - "9000:9000"
+    volumes:
+      - ../golang-api-service:/app
+    depends_on:
+      - mysql8-service
+    networks:
+      - app-network

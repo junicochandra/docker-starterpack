@@ -7,9 +7,12 @@ This repository provides a ready-to-use environment to run and serve application
 
 ## Stack
 
-- **Nginx** web server & reverse proxy
+- **Nginx** Web server & reverse proxy
 - **PHP-FPM** PHP runtime for handling requests
-- **Docker Compose** container orchestration
+- **Docker Compose** Container orchestration
+- **MySQL 8** Database service
+- **Python FastAPI Service** Lightweight and fast Python API
+- **Golang API Service** RESTful API built with Go
 
 ## Getting started
 
