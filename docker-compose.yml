@@ -1,9 +1,5 @@
-networks:
-  app-network:
-    driver: bridge
-
 services:
-  # nginx
+  # Nginx
   nginx:
     image: nginx:stable-alpine
     container_name: nginx-container
@@ -15,13 +11,14 @@ services:
     depends_on:
       - php74-service
       - php80-service
+      - php81-service
       - php84-service
       - mysql8-service
       - real-estate-price
     networks:
       - app-network
 
-  # php
+  # PHP
   php74-service:
     build:
       context: ./services/php-fpm
@@ -30,6 +27,7 @@ services:
         - PHP_VERSION=7.4-fpm
         - INSTALL_COMPOSER=true
     container_name: php74-container
+    working_dir: /var/www
     volumes:
       - ${WEB_DIRECTORY}:/var/www/
       - ./services/php-fpm/config/php7.4.ini:/usr/local/etc/php/php.ini
@@ -44,9 +42,25 @@ services:
         - PHP_VERSION=8.0-fpm-alpine
         - INSTALL_COMPOSER=true
     container_name: php80-container
+    working_dir: /var/www
     volumes:
       - ${WEB_DIRECTORY}:/var/www/
       - ./services/php-fpm/config/php8.0.ini:/usr/local/etc/php/php.ini
+    networks:
+      - app-network
+  
+  php81-service:
+    build:
+      context: ./services/php-fpm
+      dockerfile: Dockerfile
+      args:
+        - PHP_VERSION=8.1-fpm-alpine
+        - INSTALL_COMPOSER=true
+    container_name: php81-container
+    working_dir: /var/www
+    volumes:
+      - ${WEB_DIRECTORY}:/var/www/
+      - ./services/php-fpm/config/php8.1.ini:/usr/local/etc/php/php.ini
     networks:
       - app-network
 
@@ -58,13 +72,14 @@ services:
         - PHP_VERSION=8.4-fpm-alpine
         - INSTALL_COMPOSER=true
     container_name: php84-container
+    working_dir: /var/www
     volumes:
       - ${WEB_DIRECTORY}:/var/www/
       - ./services/php-fpm/config/php8.4.ini:/usr/local/etc/php/php.ini
     networks:
       - app-network
 
-  # mysql
+  # MySQL 8 Service
   mysql8-service:
     build:
       context: ./services/mysql
@@ -79,7 +94,7 @@ services:
     networks:
       - app-network
 
-  # Python - FastAPI
+  # Python Real Estate Price Predictor Service
   real-estate-price:
     build:
       context: ../real-estate-price-predictor
@@ -103,6 +118,59 @@ services:
     volumes:
       - ../golang-api-service:/app
     depends_on:
-      - mysql8-service
+      mysql8-service:
+        condition: service_started
+      rabbitmq:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/
     networks:
       - app-network
+  
+  # Redis
+  redis:
+    image: redis:7-alpine
+    container_name: redis-container
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  
+  # RabbitMQ with dashboard
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq-container
+    ports:
+      - "5672:5672"   # port AMQP
+      - "15672:15672" # port dashboard web
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "status"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  redis_data:
+  rabbitmq_data:
