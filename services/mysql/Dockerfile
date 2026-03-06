@@ -1,5 +1,0 @@
-ARG MYSQL_VERSION
-FROM mysql:${MYSQL_VERSION}
-
-# Run MySQL service
-CMD ["mysqld"]

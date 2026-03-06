@@ -1,8 +1,7 @@
 #!/bin/bash
 
 #stop docker
-/usr/local/bin/docker-compose -f docker-compose.yml stop;
-/usr/local/bin/docker-compose -f docker-compose.yml ps;
+/usr/local/bin/docker-compose -f docker-compose.yml down
 
 #rebuild and restart docker
 status2=$(docker images -f "dangling=true" -q | wc -l)

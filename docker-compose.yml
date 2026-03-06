@@ -2,31 +2,29 @@ services:
   # Nginx
   nginx:
     image: nginx:stable-alpine
-    container_name: nginx-container
+    container_name: nginx
     ports:
       - "8080:80"
     volumes:
       - ${WEB_DIRECTORY}:/var/www/
       - ./services/nginx/sites-enabled:/etc/nginx/conf.d/
     depends_on:
-      - php74-service
-      - php80-service
-      - php81-service
-      - php84-service
-      - mysql8-service
-      - real-estate-price
+      - php74
+      - php80
+      - php84
+      - mysql8
     networks:
       - app-network
 
   # PHP
-  php74-service:
+  php74:
     build:
       context: ./services/php-fpm
       dockerfile: Dockerfile
       args:
         - PHP_VERSION=7.4-fpm
         - INSTALL_COMPOSER=true
-    container_name: php74-container
+    container_name: php74
     working_dir: /var/www
     volumes:
       - ${WEB_DIRECTORY}:/var/www/
@@ -34,44 +32,29 @@ services:
     networks:
       - app-network
 
-  php80-service:
+  php80:
     build:
       context: ./services/php-fpm
       dockerfile: Dockerfile
       args:
         - PHP_VERSION=8.0-fpm-alpine
         - INSTALL_COMPOSER=true
-    container_name: php80-container
+    container_name: php80
     working_dir: /var/www
     volumes:
       - ${WEB_DIRECTORY}:/var/www/
       - ./services/php-fpm/config/php8.0.ini:/usr/local/etc/php/php.ini
     networks:
       - app-network
-  
-  php81-service:
-    build:
-      context: ./services/php-fpm
-      dockerfile: Dockerfile
-      args:
-        - PHP_VERSION=8.1-fpm-alpine
-        - INSTALL_COMPOSER=true
-    container_name: php81-container
-    working_dir: /var/www
-    volumes:
-      - ${WEB_DIRECTORY}:/var/www/
-      - ./services/php-fpm/config/php8.1.ini:/usr/local/etc/php/php.ini
-    networks:
-      - app-network
 
-  php84-service:
+  php84:
     build:
       context: ./services/php-fpm
       dockerfile: Dockerfile
       args:
         - PHP_VERSION=8.4-fpm-alpine
         - INSTALL_COMPOSER=true
-    container_name: php84-container
+    container_name: php84
     working_dir: /var/www
     volumes:
       - ${WEB_DIRECTORY}:/var/www/
@@ -80,61 +63,71 @@ services:
       - app-network
 
   # MySQL 8 Service
-  mysql8-service:
-    build:
-      context: ./services/mysql
-      args:
-        - MYSQL_VERSION=8.4.6
-    container_name: mysql8-container
+  mysql8:
+    image: mysql:8
+    container_name: mysql8
     ports:
-      - "5501:3306"
+      - "4406:3306"
     command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
     networks:
       - app-network
 
-  # Python Real Estate Price Predictor Service
-  real-estate-price:
-    build:
-      context: ../real-estate-price-predictor
-    container_name: real-estate-price-container
-    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
-    volumes:
-      - ../real-estate-price-predictor:/app
-    expose:
-      - "8000"
-    networks:
-      - app-network
-  
-  # Golang API Service
-  golang-api:
-    build:
-      context: ../golang-api-service
-      dockerfile: Dockerfile
-    container_name: golang-api-container
+  postgres:
+    image: postgres:16-alpine
+    container_name: postgres
     ports:
-      - "9000:9000"
-    volumes:
-      - ../golang-api-service:/app
-    depends_on:
-      mysql8-service:
-        condition: service_started
-      rabbitmq:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
+      - "5432:5432"
     environment:
-      - REDIS_HOST=redis
-      - REDIS_PORT=6379
-      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
     networks:
       - app-network
-  
+
+  # Python Real Estate Price Predictor Service
+  # real-estate-price:
+  #   build:
+  #     context: ../real-estate-price-predictor
+  #   container_name: real-estate-price
+  #   command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+  #   volumes:
+  #     - ../real-estate-price-predictor:/app
+  #   expose:
+  #     - "8000"
+  #   networks:
+  #     - app-network
+
+  # Golang API Service
+  # golang-api:
+  #   build:
+  #     context: ../golang-api
+  #     dockerfile: Dockerfile
+  #   container_name: golang-api
+  #   ports:
+  #     - "9000:9000"
+  #   volumes:
+  #     - ../golang-api:/app
+  #   depends_on:
+  #     mysql8:
+  #       condition: service_started
+  #     rabbitmq:
+  #       condition: service_healthy
+  #     redis:
+  #       condition: service_healthy
+  #   environment:
+  #     - REDIS_HOST=redis
+  #     - REDIS_PORT=6379
+  #     - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/
+  #   networks:
+  #     - app-network
+
   # Redis
   redis:
     image: redis:7-alpine
-    container_name: redis-container
+    container_name: redis
     ports:
       - "6379:6379"
     volumes:
@@ -146,13 +139,13 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-  
+
   # RabbitMQ with dashboard
   rabbitmq:
     image: rabbitmq:3-management
-    container_name: rabbitmq-container
+    container_name: rabbitmq
     ports:
-      - "5672:5672"   # port AMQP
+      - "5672:5672" # port AMQP
       - "15672:15672" # port dashboard web
     environment:
       RABBITMQ_DEFAULT_USER: guest
@@ -174,3 +167,4 @@ networks:
 volumes:
   redis_data:
   rabbitmq_data:
+  postgres_data:

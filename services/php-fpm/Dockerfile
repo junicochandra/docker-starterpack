@@ -14,6 +14,7 @@ RUN if grep -qi alpine /etc/os-release; then \
         freetype-dev \
         libjpeg-turbo-dev \
         libpng-dev \
+        $PHPIZE_DEPS \
     ; else \
     apt-get update && apt-get install -y \
         libzip-dev \
@@ -25,7 +26,6 @@ RUN if grep -qi alpine /etc/os-release; then \
         libfreetype6-dev \
         libjpeg62-turbo-dev \
         libpng-dev \
-        && rm -rf /var/lib/apt/lists/* \
     ; fi
 
 #############################################
