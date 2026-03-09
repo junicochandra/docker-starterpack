@@ -2,7 +2,7 @@ ARG PHP_VERSION
 FROM php:${PHP_VERSION}
 
 #############################################
-# [NEW] system dependencies for Laravel
+# System dependencies for Laravel
 #############################################
 RUN if grep -qi alpine /etc/os-release; then \
     apk add --no-cache \
@@ -14,12 +14,14 @@ RUN if grep -qi alpine /etc/os-release; then \
         freetype-dev \
         libjpeg-turbo-dev \
         libpng-dev \
+        postgresql-dev \
         $PHPIZE_DEPS \
     ; else \
     apt-get update && apt-get install -y \
         libzip-dev \
         libxml2-dev \
         libonig-dev \
+        libpq-dev \
         zip \
         unzip \
         curl \
@@ -29,31 +31,39 @@ RUN if grep -qi alpine /etc/os-release; then \
     ; fi
 
 #############################################
-# [CHANGED] Laravel required PHP extensions
+# Configure GD extension with freetype and jpeg support
+#############################################
+RUN docker-php-ext-configure gd \
+    --with-freetype \
+    --with-jpeg
+
+#############################################
+# PHP extensions
 #############################################
 RUN docker-php-ext-install \
     pdo \
     pdo_mysql \
     mysqli \
+    pdo_pgsql \
+    pgsql \
     mbstring \
     bcmath \
     xml \
-    zip \ 
+    zip \
     gd
 
 #############################################
-# [UNCHANGED] enable mysqli explicitly
+# Enable mysqli explicitly
 #############################################
 RUN docker-php-ext-enable mysqli
 
 #############################################
-# composer
+# Composer
 #############################################
 USER root
 
 ARG INSTALL_COMPOSER=false
 
-# [CHANGED] safer condition check
 RUN if [ "$INSTALL_COMPOSER" = "true" ]; then \
     curl -sS https://getcomposer.org/installer | php -- \
         --install-dir=/usr/local/bin \
