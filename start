@@ -2,6 +2,6 @@
 
 #start docker
 
-/usr/local/bin/docker-compose -f docker-compose.yml stop
-COMPOSE_HTTP_TIMEOUT=200 /usr/local/bin/docker-compose -f docker-compose.yml start
-/usr/local/bin/docker-compose -f docker-compose.yml ps
+/usr/bin/docker compose stop
+COMPOSE_HTTP_TIMEOUT=200 /usr/bin/docker compose start
+/usr/bin/docker compose ps
