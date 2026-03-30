@@ -15,6 +15,7 @@ RUN if grep -qi alpine /etc/os-release; then \
         libjpeg-turbo-dev \
         libpng-dev \
         postgresql-dev \
+        icu-dev \
         $PHPIZE_DEPS \
     ; else \
     apt-get update && apt-get install -y \
@@ -28,6 +29,7 @@ RUN if grep -qi alpine /etc/os-release; then \
         libfreetype6-dev \
         libjpeg62-turbo-dev \
         libpng-dev \
+        libicu-dev \
     ; fi
 
 #############################################
@@ -50,7 +52,8 @@ RUN docker-php-ext-install \
     bcmath \
     xml \
     zip \
-    gd
+    gd \
+    intl
 
 #############################################
 # Enable mysqli explicitly
