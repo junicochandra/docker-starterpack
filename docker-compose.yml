@@ -186,6 +186,18 @@ services:
     networks:
       - app-network
 
+  meilisearch:
+    image: getmeili/meilisearch:latest
+    container_name: meilisearch
+    ports:
+      - "7700:7700"
+    environment:
+      MEILI_MASTER_KEY: masterKey123
+    volumes:
+      - meili_data:/meili_data
+    networks:
+      - app-network
+
 networks:
   app-network:
     driver: bridge
@@ -196,3 +208,4 @@ volumes:
   redis_data:
   rabbitmq_data:
   elasticsearch_data:
+  meili_data:
